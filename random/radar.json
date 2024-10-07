@@ -1,0 +1,213 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A radar chart with triangular outline comparing club performance based on football statistics.",
+  "width": 400,
+  "height": 400,
+  "padding": 20,
+  "autosize": {"type": "none"},
+  "background": "#f0f0f0",
+  "title": {
+    "text": "Club Performance Metrics",
+    "fontSize": 24,
+    "font": "Inter, sans-serif",
+    "fontWeight": "bold",
+    "color": "#333333",
+    "anchor": "start",
+    "offset": 20
+  },
+  "signals": [
+    {
+      "name": "radius",
+      "update": "min(width, height) / 2 - 50"
+    },
+    {
+      "name": "club_select",
+      "value": ["Chelsea"],
+      "bind": {
+        "input": "select",
+        "options": ["Arsenal", "Aston-Villa", "Brighton-and-Hove-Albion", "Burnley", "Chelsea"],
+        "labels": ["Arsenal", "Aston Villa", "Brighton", "Burnley", "Chelsea"],
+        "name": "Compare Clubs: ",
+        "multiple": true
+      }
+    }
+  ],
+  "data": [
+    {
+      "name": "table",
+      "url": "wrangled_football_data.csv",
+      "format": {"type": "csv"},
+      "transform": [
+        {"type": "filter", "expr": "indexof(club_select, datum.Club) >= 0"}
+      ]
+    },
+    {
+      "name": "variables",
+      "source": "table",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": ["variable"]
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "angular",
+      "type": "point",
+      "range": {"signal": "[-PI, PI]"},
+      "padding": 0.5,
+      "domain": {"data": "table", "field": "variable"}
+    },
+    {
+      "name": "radial",
+      "type": "linear",
+      "range": {"signal": "[0, radius]"},
+      "zero": true,
+      "nice": true,
+      "domain": {"data": "table", "field": "value"},
+      "domainMin": 0
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": {"data": "table", "field": "Club"},
+      "range": ["#FF4136", "#0074D9", "#2ECC40", "#FF851B", "#7FDBFF"]
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "name": "chart",
+      "encode": {
+        "enter": {
+          "x": {"signal": "width / 2"},
+          "y": {"signal": "height / 2 + 20"}
+        }
+      },
+      "marks": [
+        {
+          "type": "line",
+          "name": "outer-line",
+          "from": {"data": "variables"},
+          "encode": {
+            "enter": {
+              "interpolate": {"value": "linear-closed"},
+              "x": {"signal": "radius * cos(scale('angular', datum.variable))"},
+              "y": {"signal": "radius * sin(scale('angular', datum.variable))"},
+              "stroke": {"value": "#cccccc"},
+              "strokeWidth": {"value": 1}
+            }
+          }
+        },
+        {
+          "type": "rule",
+          "name": "radial-grid",
+          "from": {"data": "variables"},
+          "zindex": 0,
+          "encode": {
+            "enter": {
+              "x": {"value": 0},
+              "y": {"value": 0},
+              "x2": {"signal": "radius * cos(scale('angular', datum.variable))"},
+              "y2": {"signal": "radius * sin(scale('angular', datum.variable))"},
+              "stroke": {"value": "#cccccc"},
+              "strokeWidth": {"value": 1},
+              "strokeDash": {"value": [3, 3]}
+            }
+          }
+        },
+        {
+          "type": "group",
+          "name": "categories",
+          "zindex": 1,
+          "from": {
+            "facet": {"data": "table", "name": "facet", "groupby": ["Club"]}
+          },
+          "marks": [
+            {
+              "type": "line",
+              "name": "category-line",
+              "from": {"data": "facet"},
+              "encode": {
+                "enter": {
+                  "interpolate": {"value": "linear-closed"},
+                  "x": {"signal": "scale('radial', datum.value) * cos(scale('angular', datum.variable))"},
+                  "y": {"signal": "scale('radial', datum.value) * sin(scale('angular', datum.variable))"},
+                  "stroke": {"scale": "color", "field": "Club"},
+                  "strokeWidth": {"value": 2},
+                  "fill": {"scale": "color", "field": "Club"},
+                  "fillOpacity": {"value": 0.3}
+                }
+              }
+            },
+            {
+              "type": "symbol",
+              "name": "category-point",
+              "from": {"data": "facet"},
+              "encode": {
+                "enter": {
+                  "x": {"signal": "scale('radial', datum.value) * cos(scale('angular', datum.variable))"},
+                  "y": {"signal": "scale('radial', datum.value) * sin(scale('angular', datum.variable))"},
+                  "fill": {"scale": "color", "field": "Club"},
+                  "stroke": {"value": "white"},
+                  "strokeWidth": {"value": 1},
+                  "size": {"value": 40}
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "name": "key-label",
+          "from": {"data": "variables"},
+          "zindex": 1,
+          "encode": {
+            "enter": {
+              "x": {"signal": "(radius + 10) * cos(scale('angular', datum.variable))"},
+              "y": {"signal": "(radius + 10) * sin(scale('angular', datum.variable))"},
+              "text": {"field": "variable"},
+              "align": {"signal": "abs(scale('angular', datum.variable)) > PI / 2 ? 'right' : 'left'"},
+              "baseline": {"signal": "scale('angular', datum.variable) > 0 ? 'bottom' : 'top'"},
+              "fill": {"value": "#333333"},
+              "fontWeight": {"value": "bold"},
+              "fontSize": {"value": 10},
+              "font": {"value": "Inter, sans-serif"}
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "legends": [
+    {
+      "fill": "color",
+      "orient": "bottom",
+      "direction": "horizontal",
+      "symbolType": "circle",
+      "title": "Clubs",
+      "offset": 20,
+      "encode": {
+        "title": {
+          "update": {
+            "fontSize": {"value": 14},
+            "fontWeight": {"value": "bold"}
+          }
+        },
+        "labels": {
+          "update": {
+            "fontSize": {"value": 12}
+          }
+        },
+        "symbols": {
+          "update": {
+            "strokeWidth": {"value": 2},
+            "size": {"value": 80}
+          }
+        }
+      }
+    }
+  ]
+}

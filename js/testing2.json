@@ -1,0 +1,136 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 1000,
+  "height": 700,
+  "title": {
+    "text": "European Football Stadium Locations",
+    "subtitle": "Top league stadiums in England, Scotland, Germany, Spain, and France. Use controls to zoom and pan."
+  },
+  "projection": {
+    "type": "mercator",
+    "center": {"expr": "center"},
+    "scale": {"expr": "zoom * 800"}
+  },
+  "layer": [
+    {
+      "mark": {"type": "rect", "fill": "#f0f0f0"}
+    },
+    {
+      "data": {
+        "url": "https://raw.githubusercontent.com/jypang11/FIT3179-Week-9-Homework/refs/heads/main/combined_map.json",
+        "format": {"type": "topojson", "feature": "ne_110m_admin_0_countries"}
+      },
+      "mark": {"type": "geoshape", "fill": "#d9e6c3", "stroke": "#888"}
+    },
+    {
+      "data": {
+        "url": "https://gist.githubusercontent.com/FourPawnsAttack/ab098a644250f8775ae6d3988b16e5d8/raw/5305c3ad0b75854823c94e5c68a9dcfee5733974/graticules_5.json",
+        "format": {"type": "topojson", "feature": "ne_50m_graticules_5"}
+      },
+      "mark": {"type": "geoshape", "fill": null, "stroke": "#ccc", "strokeWidth": 0.5}
+    },
+    {
+      "data": {"url": "stadiums-with-GPS-coordinates.csv"},
+      "transform": [
+        {
+          "calculate": "datum.Capacity < 40000 ? 'Small' : datum.Capacity < 60000 ? 'Medium' : 'Large'",
+          "as": "Stadium_Size"
+        },
+        {
+          "filter": "search_term == '' || test(regexp(search_term, 'i'), datum.Team) || test(regexp(search_term, 'i'), datum.Stadium) || test(regexp(search_term, 'i'), datum.City)"
+        }
+      ],
+      "mark": {"type": "circle"},
+      "encoding": {
+        "longitude": {"field": "Longitude", "type": "quantitative"},
+        "latitude": {"field": "Latitude", "type": "quantitative"},
+        "color": {
+          "field": "Country",
+          "type": "nominal",
+          "scale": {
+            "domain": ["England", "Scotland", "Germany", "Spain", "France"],
+            "range": ["#4e79a7", "#f28e2c", "#59a14f", "#e15759", "#af7aa1"]
+          },
+          "legend": {"title": "Country", "orient": "bottom-left"}
+        },
+        "size": {
+          "field": "Stadium_Size",
+          "type": "ordinal",
+          "scale": {
+            "domain": ["Small", "Medium", "Large"],
+            "range": [
+              {"expr": "70 / sqrt(zoom)"},
+              {"expr": "200 / sqrt(zoom)"},
+              {"expr": "400 / sqrt(zoom)"}
+            ]
+          },
+          "legend": {"title": "Stadium Capacity", "orient": "bottom-right"}
+        },
+        "tooltip": [
+          {"field": "Team", "type": "nominal"},
+          {"field": "Stadium", "type": "nominal"},
+          {"field": "Capacity", "type": "quantitative", "format": ","},
+          {"field": "City", "type": "nominal"},
+          {"field": "Country", "type": "nominal"}
+        ]
+      }
+    },
+    {
+      "data": {
+        "values": [
+          {"country": "England", "lat": 52.5, "lon": -1.5},
+          {"country": "Scotland", "lat": 56.5, "lon": -4},
+          {"country": "Germany", "lat": 51, "lon": 10},
+          {"country": "Spain", "lat": 40, "lon": -3},
+          {"country": "France", "lat": 47, "lon": 2}
+        ]
+      },
+      "mark": {"type": "text", "fontSize": 10, "fontWeight": "bold"},
+      "encoding": {
+        "longitude": {"field": "lon", "type": "quantitative"},
+        "latitude": {"field": "lat", "type": "quantitative"},
+        "text": {"field": "country"}
+      }
+    }
+  ],
+  "params": [
+    {
+      "name": "zoom",
+      "value": 1,
+      "bind": {
+        "input": "range",
+        "min": 0.5,
+        "max": 20,
+        "step": 0.1
+      }
+    },
+    {
+      "name": "center",
+      "value": [10, 52],
+      "bind": {
+        "input": "select",
+        "options": [
+          [10, 52],
+          [-1.5, 52.5],
+          [-4, 56.5],
+          [10, 51],
+          [-3, 40],
+          [2, 47]
+        ],
+        "labels": ["Europe", "England", "Scotland", "Germany", "Spain", "France"]
+      }
+    },
+    {
+      "name": "search_term",
+      "value": "",
+      "bind": {
+        "input": "text",
+        "placeholder": "Search for team, stadium, or city"
+      }
+    }
+  ],
+  "config": {
+    "view": {"stroke": null},
+    "legend": {"titlePadding": 5}
+  }
+}

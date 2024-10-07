@@ -1,0 +1,98 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "description": "Premier League Team Rankings Over Seasons",
+    "width": 550,
+    "height": 400,
+    "data": {
+        "url": "Team_Points_and_Ranks.csv",  
+        "format": {
+            "type": "csv"
+        }
+    },
+    "transform": [
+        {
+            "filter": "datum.Rank <= 5"  
+        }
+    ],
+    "encoding": {
+        "x": {
+            "field": "Season_End_Year",
+            "type": "ordinal",
+            "sort": "ascending",
+            "title": "Season End Year"
+        },
+        "y": {
+            "field": "Rank",
+            "type": "quantitative",
+            "sort": "descending",
+            "title": "Team Ranking",
+            "axis": {
+                "tickCount": 5
+            }
+        }
+    },
+    "layer": [
+        {
+            "params": [
+                {
+                    "name": "team_select",
+                    "select": {
+                        "type": "point",
+                        "on": "click",
+                        "fields": ["Team"]
+                    },
+                    "bind": "legend"
+                }
+            ],
+            "mark": {
+                "type": "circle"
+            },
+            "encoding": {
+                "size": {
+                    "condition": {
+                        "param": "team_select",
+                        "empty": false,
+                        "value": 100
+                    },
+                    "value": 25
+                },
+                "color": {
+                    "condition": {
+                        "param": "team_select",
+                        "empty": false,
+                        "value": "black"
+                    },
+                    "field": "Team"
+                },
+                "tooltip": [
+                    {"field": "Team"},
+                    {"field": "Rank"},
+                    {"field": "Season_End_Year"}
+                ]
+            }
+        },
+        {
+            "mark": {
+                "type": "line"
+            },
+            "encoding": {
+                "color": {
+                    "condition": {
+                        "param": "team_select",
+                        "empty": false,
+                        "field": "Team"
+                    },
+                    "value": "lightgray"  
+                },
+                "size": {
+                    "condition": {
+                        "param": "team_select",
+                        "empty": false,
+                        "value": 3
+                    },
+                    "value": 1  
+                }
+            }
+        }
+    ]
+}

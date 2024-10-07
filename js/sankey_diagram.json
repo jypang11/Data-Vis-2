@@ -1,0 +1,296 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "width": 800,
+  "height": 400,
+  "padding": 5,
+  "data": [
+    {
+      "name": "source",
+      "url": "ManUtd 2023 Match Statistics.csv",
+      "format": {"type": "csv", "parse": "auto"}
+    },
+    {
+      "name": "rawData",
+      "source": "source",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [],
+          "fields": ["Touches in Defensive Third", "Touches in Middle Third", "Touches in Attacking Third", "Touches in Attacking Penalty Area"],
+          "ops": ["average", "average", "average", "average"],
+          "as": ["avgDefThird", "avgMidThird", "avgAttThird", "avgAttPenArea"]
+        },
+        {
+          "type": "formula",
+          "expr": "round(datum.avgDefThird)",
+          "as": "roundedDefThird"
+        },
+        {
+          "type": "formula",
+          "expr": "round(datum.avgMidThird)",
+          "as": "roundedMidThird"
+        },
+        {
+          "type": "formula",
+          "expr": "round(datum.avgAttThird)",
+          "as": "roundedAttThird"
+        },
+        {
+          "type": "formula",
+          "expr": "round(datum.avgAttPenArea)",
+          "as": "roundedAttPenArea"
+        },
+        {
+          "type": "fold",
+          "fields": ["roundedDefThird", "roundedMidThird", "roundedAttThird", "roundedAttPenArea"],
+          "as": ["key", "value"]
+        },
+        {
+          "type": "formula",
+          "expr": "if(datum.key === 'roundedDefThird', 'Defensive Third', if(datum.key === 'roundedMidThird', 'Middle Third', if(datum.key === 'roundedAttThird', 'Attacking Third', 'Attacking Penalty Area')))",
+          "as": "source"
+        },
+        {
+          "type": "formula",
+          "expr": "if(datum.key === 'roundedDefThird', 'Middle Third', if(datum.key === 'roundedMidThird', 'Attacking Third', if(datum.key === 'roundedAttThird', 'Attacking Penalty Area', 'End')))",
+          "as": "target"
+        }
+      ]
+    },
+    {
+      "name": "nodes",
+      "source": "rawData",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "!groupSelector || groupSelector.source == datum.source || groupSelector.target == datum.target"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.source+datum.target",
+          "as": "key"
+        },
+        {
+          "type": "fold",
+          "fields": ["source", "target"],
+          "as": ["stack", "grpId"]
+        },
+        {
+          "type": "formula",
+          "expr": "datum.stack == 'source' ? datum.source+' '+datum.target : datum.target+' '+datum.source",
+          "as": "sortField"
+        },
+        {
+          "type": "stack",
+          "groupby": ["stack"],
+          "sort": {"field": "sortField", "order": "descending"},
+          "field": "value"
+        },
+        {
+          "type": "formula",
+          "expr": "(datum.y0+datum.y1)/2",
+          "as": "yc"
+        }
+      ]
+    },
+    {
+      "name": "groups",
+      "source": "nodes",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": ["stack", "grpId"],
+          "fields": ["value"],
+          "ops": ["sum"],
+          "as": ["total"]
+        },
+        {
+          "type": "stack",
+          "groupby": ["stack"],
+          "sort": {"field": "grpId", "order": "descending"},
+          "field": "total"
+        },
+        {
+          "type": "formula",
+          "expr": "scale('y', datum.y0)",
+          "as": "scaledY0"
+        },
+        {
+          "type": "formula",
+          "expr": "scale('y', datum.y1)",
+          "as": "scaledY1"
+        },
+        {
+          "type": "formula",
+          "expr": "datum.stack == 'source'",
+          "as": "rightLabel"
+        }
+      ]
+    },
+    {
+      "name": "edges",
+      "source": "nodes",
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "datum.stack == 'source'"
+        },
+        {
+          "type": "lookup",
+          "from": "nodes",
+          "key": "key",
+          "fields": ["key"],
+          "as": ["target"]
+        },
+        {
+          "type": "filter",
+          "expr": "datum.target.stack == 'target'"
+        },
+        {
+          "type": "linkpath",
+          "orient": "horizontal",
+          "shape": "diagonal",
+          "sourceY": {"expr": "scale('y', datum.yc)"},
+          "sourceX": {"expr": "scale('x', 'source') + bandwidth('x')"},
+          "targetY": {"expr": "scale('y', datum.target.yc)"},
+          "targetX": {"expr": "scale('x', 'target')"}
+        },
+        {
+          "type": "formula",
+          "expr": "range('y')[0]-scale('y', datum.value)",
+          "as": "strokeWidth"
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "band",
+      "range": "width",
+      "domain": ["source", "target"],
+      "paddingOuter": 0.05,
+      "paddingInner": 0.95
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "range": "height",
+      "domain": {"data": "nodes", "field": "y1"}
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "range": "category",
+      "domain": {"data": "rawData", "field": "source"}
+    },
+    {
+      "name": "stackNames",
+      "type": "ordinal",
+      "range": ["Source", "Destination"],
+      "domain": ["source", "target"]
+    }
+  ],
+  "axes": [
+    {
+      "orient": "bottom",
+      "scale": "x",
+      "encode": {
+        "labels": {
+          "update": {
+            "text": {"scale": "stackNames", "field": "value"}
+          }
+        }
+      }
+    },
+    {"orient": "left", "scale": "y", "title": "Average Touches"}
+  ],
+  "marks": [
+    {
+      "type": "path",
+      "name": "edgeMark",
+      "from": {"data": "edges"},
+      "encode": {
+        "update": {
+          "stroke": {"scale": "color", "field": "source"},
+          "strokeWidth": {"field": "strokeWidth"},
+          "path": {"field": "path"},
+          "strokeOpacity": {
+            "signal": "!groupSelector && (groupHover.source == datum.source || groupHover.target == datum.target) ? 0.9 : 0.3"
+          },
+          "zindex": {
+            "signal": "!groupSelector && (groupHover.source == datum.source || groupHover.target == datum.target) ? 1 : 0"
+          },
+          "tooltip": {
+            "signal": "datum.source + ' → ' + datum.target + '    ' + format(datum.value, ',.0f') + ' average touches'"
+          }
+        },
+        "hover": {"strokeOpacity": {"value": 1}}
+      }
+    },
+    {
+      "type": "rect",
+      "name": "groupMark",
+      "from": {"data": "groups"},
+      "encode": {
+        "enter": {
+          "fill": {"scale": "color", "field": "grpId"},
+          "width": {"scale": "x", "band": 1}
+        },
+        "update": {
+          "x": {"scale": "x", "field": "stack"},
+          "y": {"field": "scaledY0"},
+          "y2": {"field": "scaledY1"},
+          "fillOpacity": {"value": 0.6},
+          "tooltip": {
+            "signal": "datum.grpId + '   ' + format(datum.total, ',.0f') + ' average touches'"
+          }
+        },
+        "hover": {"fillOpacity": {"value": 1}}
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "groups"},
+      "encode": {
+        "update": {
+          "x": {
+            "signal": "scale('x', datum.stack) + (datum.rightLabel ? bandwidth('x') + 8 : -8)"
+          },
+          "yc": {"signal": "(datum.scaledY0 + datum.scaledY1)/2"},
+          "align": {"signal": "datum.rightLabel ? 'left' : 'right'"},
+          "baseline": {"value": "middle"},
+          "fontWeight": {"value": "bold"},
+          "text": {"field": "grpId"}
+        }
+      }
+    }
+  ],
+  "signals": [
+    {
+      "name": "groupHover",
+      "value": {},
+      "on": [
+        {
+          "events": "@groupMark:mouseover",
+          "update": "{source:datum.stack=='source' && datum.grpId, target:datum.stack=='target' && datum.grpId}"
+        },
+        {"events": "mouseout", "update": "{}"}
+      ]
+    },
+    {
+      "name": "groupSelector",
+      "value": false,
+      "on": [
+        {
+          "events": "@groupMark:click!",
+          "update": "{stack:datum.stack, source:datum.stack=='source' && datum.grpId, target:datum.stack=='target' && datum.grpId}"
+        },
+        {
+          "events": "dblclick",
+          "update": "false"
+        }
+      ]
+    }
+  ]
+}

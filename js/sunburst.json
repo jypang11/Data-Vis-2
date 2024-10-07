@@ -1,0 +1,45 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "width": 400,
+    "height": 600,
+    "title": "Premier League Forwards' Goal Distribution by Club",
+    "data": {
+      "url": "2020-09-24.csv"
+    },
+    "params": [
+      {
+        "name": "goals_threshold",
+        "value": 0,
+        "bind": {
+          "input": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "name": "Minimum Goals: "
+        }
+      }
+    ],
+    "transform": [
+      {"filter": "datum.Position == 'Forward'"},
+      {"filter": "datum.Goals >= goals_threshold"}
+    ],
+    "encoding": {
+      "theta": {"field": "Goals", "type": "quantitative", "stack": true},
+      "radius": {"field": "Goals", "scale": {"type": "linear", "zero": true, "rangeMin": 50, "rangeMax": 350}},
+      "color": {
+        "field": "Club",
+        "type": "nominal",
+        "scale": {"scheme": "category20"}
+      },
+      "tooltip": [
+        {"field": "Club", "type": "nominal"},
+        {"field": "Name", "type": "nominal"},
+        {"field": "Goals", "type": "quantitative"}
+      ]
+    },
+    "layer": [
+      {
+        "mark": {"type": "arc", "innerRadius": 50, "stroke": "#FFFFFF"}
+      }
+    ]
+  }

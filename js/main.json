@@ -1,0 +1,89 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 800,
+  "height": 400,
+  "title": "Football Stadiums Around the World",
+  "params": [
+    {
+      "name": "selectedCountry",
+      "value": null,
+      "bind": {
+        "input": "select",
+        "options": [null],
+        "labels": ["World View"],
+        "name": "Select Country: "
+      }
+    }
+  ],
+  "projection": {
+    "type": "mercator",
+    "center": {"expr": "selectedCountry ? [datum.longitude, datum.latitude] : [0, 20]"},
+    "scale": {"expr": "selectedCountry ? 1000 : 100"}
+  },
+  "layer": [
+    {
+      "data": {
+        "url": "https://raw.githubusercontent.com/vega/vega-datasets/master/data/world-110m.json",
+        "format": {"type": "topojson", "feature": "countries"}
+      },
+      "mark": {"type": "geoshape", "fill": "#DDA15E", "stroke": "white"}
+    },
+    {
+      "data": {"url": "stadiums-with-GPS-coordinates.csv"},
+      "transform": [
+        {"filter": "selectedCountry == null || datum.Country == selectedCountry"}
+      ],
+      "mark": {"type": "circle", "opacity": 0.8},
+      "encoding": {
+        "longitude": {"field": "Longitude", "type": "quantitative"},
+        "latitude": {"field": "Latitude", "type": "quantitative"},
+        "size": {
+          "field": "Capacity",
+          "type": "quantitative",
+          "title": "Stadium Capacity",
+          "scale": {"type": "sqrt", "domain": [0, 100000], "range": [0, 1000]}
+        },
+        "color": {"field": "Country", "type": "nominal", "title": "Country"},
+        "tooltip": [
+          {"field": "Team", "type": "nominal", "title": "Team"},
+          {"field": "Stadium", "type": "nominal", "title": "Stadium"},
+          {"field": "Capacity", "type": "quantitative", "title": "Capacity"},
+          {"field": "City", "type": "nominal", "title": "City"},
+          {"field": "Country", "type": "nominal", "title": "Country"}
+        ]
+      }
+    },
+    {
+      "data": {
+        "url": "https://raw.githubusercontent.com/google/dspl/master/samples/google/canonical/countries.csv"
+      },
+      "transform": [
+        {
+          "lookup": "name",
+          "from": {
+            "data": {"url": "stadiums-with-GPS-coordinates.csv"},
+            "key": "Country",
+            "fields": ["Country"]
+          },
+          "as": "has_stadium"
+        },
+        {"filter": "datum.has_stadium != null"}
+      ],
+      "mark": {
+        "type": "text",
+        "align": "center",
+        "baseline": "middle",
+        "fontSize": 8,
+        "fontWeight": "bold"
+      },
+      "encoding": {
+        "text": {"field": "name"},
+        "longitude": {"field": "longitude", "type": "quantitative"},
+        "latitude": {"field": "latitude", "type": "quantitative"}
+      }
+    }
+  ],
+  "config": {
+    "background": "#f0f0f0"
+  }
+}
