@@ -1,10 +1,13 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "width": 1000,
+  "width": 1450,
   "height": 700,
   "title": {
     "text": "European Football Stadium Locations",
-    "subtitle": "Top league stadiums in England, Scotland, Germany, Spain, and France. Use controls to zoom and pan."
+    "subtitle": "Top league stadiums in England, Scotland, Germany, Spain, and France. Use controls to zoom, pan, and filter.",
+    "fontSize": 20,
+    "subtitleFontSize": 14,
+    "subtitleColor": "#666"
   },
   "projection": {
     "type": "mercator",
@@ -13,14 +16,14 @@
   },
   "layer": [
     {
-      "mark": {"type": "rect", "fill": "#f0f0f0"}
+      "mark": {"type": "rect", "fill": "#e6f3ff"}
     },
     {
       "data": {
         "url": "https://raw.githubusercontent.com/jypang11/FIT3179-Week-9-Homework/refs/heads/main/combined_map.json",
         "format": {"type": "topojson", "feature": "ne_110m_admin_0_countries"}
       },
-      "mark": {"type": "geoshape", "fill": "#d9e6c3", "stroke": "#888"}
+      "mark": {"type": "geoshape", "fill": "#d9e6c3", "stroke": "#888", "strokeWidth": 0.5}
     },
     {
       "data": {
@@ -30,17 +33,17 @@
       "mark": {"type": "geoshape", "fill": null, "stroke": "#ccc", "strokeWidth": 0.5}
     },
     {
-      "data": {"url": "stadiums-with-GPS-coordinates.csv"},
+      "data": {"url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/stadiums-with-GPS-coordinates.csv"},
       "transform": [
         {
-          "calculate": "datum.Capacity < 40000 ? 'Small' : datum.Capacity < 60000 ? 'Medium' : 'Large'",
+          "calculate": "datum.Capacity < 40000 ? 'Small (< 40,000)' : datum.Capacity < 60000 ? 'Medium (40,000 - 59,999)' : 'Large (≥ 60,000)'",
           "as": "Stadium_Size"
         },
         {
           "filter": "search_term == '' || test(regexp(search_term, 'i'), datum.Team) || test(regexp(search_term, 'i'), datum.Stadium) || test(regexp(search_term, 'i'), datum.City)"
         }
       ],
-      "mark": {"type": "circle"},
+      "mark": {"type": "circle", "opacity": 0.8},
       "encoding": {
         "longitude": {"field": "Longitude", "type": "quantitative"},
         "latitude": {"field": "Latitude", "type": "quantitative"},
@@ -57,7 +60,7 @@
           "field": "Stadium_Size",
           "type": "ordinal",
           "scale": {
-            "domain": ["Small", "Medium", "Large"],
+            "domain": ["Small (< 40,000)", "Medium (40,000 - 59,999)", "Large (≥ 60,000)"],
             "range": [
               {"expr": "70 / sqrt(zoom)"},
               {"expr": "200 / sqrt(zoom)"},
@@ -67,11 +70,11 @@
           "legend": {"title": "Stadium Capacity", "orient": "bottom-right"}
         },
         "tooltip": [
-          {"field": "Team", "type": "nominal"},
-          {"field": "Stadium", "type": "nominal"},
-          {"field": "Capacity", "type": "quantitative", "format": ","},
-          {"field": "City", "type": "nominal"},
-          {"field": "Country", "type": "nominal"}
+          {"field": "Team", "type": "nominal", "title": "Team"},
+          {"field": "Stadium", "type": "nominal", "title": "Stadium"},
+          {"field": "Capacity", "type": "quantitative", "format": ",", "title": "Capacity"},
+          {"field": "City", "type": "nominal", "title": "City"},
+          {"field": "Country", "type": "nominal", "title": "Country"}
         ]
       }
     },
@@ -85,7 +88,12 @@
           {"country": "France", "lat": 47, "lon": 2}
         ]
       },
-      "mark": {"type": "text", "fontSize": 10, "fontWeight": "bold"},
+      "mark": {
+        "type": "text",
+        "fontSize": {"expr": "10 / sqrt(zoom)"},
+        "fontWeight": "bold",
+        "opacity": 0.7
+      },
       "encoding": {
         "longitude": {"field": "lon", "type": "quantitative"},
         "latitude": {"field": "lat", "type": "quantitative"},
@@ -101,7 +109,8 @@
         "input": "range",
         "min": 0.5,
         "max": 20,
-        "step": 0.1
+        "step": 0.1,
+        "name": "Zoom Level"
       }
     },
     {
@@ -117,7 +126,8 @@
           [-3, 40],
           [2, 47]
         ],
-        "labels": ["Europe", "England", "Scotland", "Germany", "Spain", "France"]
+        "labels": ["Europe", "England", "Scotland", "Germany", "Spain", "France"],
+        "name": "Center on"
       }
     },
     {
@@ -125,12 +135,14 @@
       "value": "",
       "bind": {
         "input": "text",
-        "placeholder": "Search for team, stadium, or city"
+        "placeholder": "Search for team, stadium, or city",
+        "name": "Search"
       }
     }
   ],
   "config": {
     "view": {"stroke": null},
-    "legend": {"titlePadding": 5}
+    "legend": {"titlePadding": 5},
+    "axis": {"domain": false}
   }
 }

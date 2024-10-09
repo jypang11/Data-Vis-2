@@ -1,0 +1,120 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+  "height": 200,
+  "width": 650,
+  "data": {
+    "url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/2020-09-24.csv"
+  },
+  "params": [
+    {
+      "name": "Goals_Above",
+      "value": 0,
+      "bind": {
+        "input": "range",
+        "min": 0,
+        "max": 20,
+        "step": 1,
+        "name": "Minimum Goals: "
+      }
+    },
+    {
+      "name": "Position_selection",
+      "bind": {
+        "input": "select",
+        "options": [
+          null,
+          "Forward",
+          "Midfielder",
+          "Defender",
+          "Goalkeeper"
+        ],
+        "labels": [
+          "All",
+          "Forward",
+          "Midfielder",
+          "Defender",
+          "Goalkeeper"
+        ],
+        "name": "Position: "
+      }
+    }
+  ],
+  "transform": [
+    {"filter": "datum['Goals'] > Goals_Above"},
+    {"filter": "Position_selection == null || datum.Position == Position_selection"},
+    {"calculate": "floor(datum.Age)", "as": "Age_rounded"}
+  ],
+  "layer": [
+    {
+      "selection": {
+        "brush": {
+          "type": "interval",
+          "encodings": ["x"]
+        }
+      },
+      "mark": {"type": "point"},
+      "encoding": {
+        "x": {
+          "field": "Age_rounded",
+          "type": "ordinal",
+          "title": "Player Age",
+          "axis": {
+            "labelAngle": 0
+          }
+        },
+        "y": {
+          "field": "Appearances",
+          "type": "quantitative",
+          "title": "Number of Appearances"
+        },
+        "color": {
+          "field": "Club",
+          "type": "nominal",
+          "legend": {
+            "title": "Club",
+            "orient": "bottom",
+            "columns": 3
+          }
+        },
+        "size": {
+          "field": "Goals",
+          "type": "quantitative",
+          "legend": null
+        },
+        "opacity": {
+          "condition": {"selection": "brush", "value": 1},
+          "value": 0.7
+        },
+        "tooltip": [
+          {"field": "Name", "title": "Player Name"},
+          {"field": "Age", "title": "Age"},
+          {"field": "Appearances", "title": "Appearances"},
+          {"field": "Goals", "title": "Goals"},
+          {"field": "Club", "title": "Club"},
+          {"field": "Position", "title": "Position"}
+        ]
+      }
+    },
+    {
+      "transform": [{"filter": {"selection": "brush"}}],
+      "mark": "rule",
+      "encoding": {
+        "y": {
+          "aggregate": "mean",
+          "field": "Appearances",
+          "type": "quantitative"
+        },
+        "color": {"value": "red"},
+        "size": {"value": 3}
+      }
+    }
+  ],
+  "config": {
+    "font": "Georgia",
+    "legend": {
+      "titleAlign": "left",
+      "labelAlign": "left"
+    },
+    "view": {"stroke": null}
+  }
+}

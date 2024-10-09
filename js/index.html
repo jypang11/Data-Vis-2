@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premier League Insights</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            border: none;
+            transition: box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+        .card:hover {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+        .card-header {
+            background-color: #8a2be2;
+            color: white;
+            font-weight: bold;
+            border-radius: 12px 12px 0 0;
+            font-size: 1.25rem;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .visualization-container {
+            height: 400px;
+        }
+        .visualization-container-large {
+            height: 600px;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+        }
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .title-container img {
+            max-height: 50px;
+            margin-right: 15px;
+        }
+        .description-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="title-container">
+                            <img src="EnglishPremierLeague.webp" alt="Premier League Logo" class="img-fluid">
+                            <h1>Premier League Insights</h1>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center">Premier League is the top professional football league in England, featuring elite clubs competing annually to be crowned champions of English football.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">Team Performance Metrics</div>
+                    <div class="card-body">
+                        <div id="radar" class="visualization-container"></div>
+                        <div class="description-box">
+                            <p>This radar chart illustrates a team's performance across six key metrics: Goals, Assists, Tackles, Interceptions, Passes per match, and Appearances. The red area represents the team's strengths and weaknesses, with larger areas indicating better performance. This visual tool enables quick assessment of a team's all-round capabilities and playing style, highlighting areas of excellence and potential improvement. It provides a comprehensive view of the team's balanced performance across various aspects of the game.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header text-center">Premier League Players: Age vs. Appearances</div>
+                    <div class="card-body">
+                        <div id="sankey" class="visualization-container-large"></div>
+                        <div class="description-box">
+                            <p>This scatter plot visualizes Premier League player statistics, comparing age against career appearances. Each point represents a player, with size indicating goals scored and color denoting club affiliation. The x-axis displays player ages, while the y-axis shows total appearances, revealing career trajectories and longevity. The visualization captures the diverse landscape of player careers, highlighting young talents, peak performers, and experienced veterans. It allows viewers to easily identify age-related trends, club preferences, and individual player achievements. The chart effectively summarizes player development and utilization across the entire Premier League, offering insights into career patterns and club strategies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-center">Team Ranking Trends</div>
+                    <div class="card-body">
+                        <div id="bump" class="visualization-container"></div>
+                        <div class="description-box">
+                            <p>This bump chart tracks Premier League team rankings over a season. Each line represents a team, with upward slopes showing ranking improvement and downward slopes indicating decline. The visualization captures the dynamic nature of team performance and league standings, highlighting consistent top performers and teams making significant moves. It allows viewers to easily identify trends, turning points, and the overall competitive landscape throughout the season. The chart effectively summarizes the ebb and flow of team fortunes across the entire league campaign.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header text-center">Premier League Players by Goals per Appearance</div>
+                    <div class="card-body">
+                        <div id="bubble" class="visualization-container-large"></div>
+                        <div class="description-box">
+                            <p>This force-directed bubble chart visualizes Premier League players based on their goal-scoring efficiency. Each bubble represents a player, with its size reflecting their goals per appearance ratio. Colors denote different playing positions, allowing for quick comparison across roles. The chart's dynamic layout clusters similar performers together, highlighting standout goal-scorers and positional trends. Viewers can easily identify top strikers, surprisingly efficient defenders, and midfielders with notable goal contributions. Interactive elements enable detailed exploration of individual player stats, including total goals and appearances. This visualization effectively summarizes player performance, offering insights into scoring patterns and exceptional talents across the Premier League.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header text-center">Additional Visualization</div>
+                    <div class="card-body">
+                        <div id="additional" class="visualization-container-large"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadAndEmbedVegaLite(elementId, jsonFile) {
+            console.log(`Attempting to load ${jsonFile} for ${elementId}`);
+            fetch(jsonFile)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(spec => {
+                    console.log(`Successfully loaded ${jsonFile}. Embedding visualization...`);
+                    return vegaEmbed(elementId, spec, {
+                        actions: false,
+                        height: elementId === '#sankey' || elementId === '#bubble' || elementId === '#additional' ? 550 : 350
+                    });
+                })
+                .then(() => {
+                    console.log(`Successfully embedded visualization for ${elementId}`);
+                })
+                .catch(error => {
+                    console.error(`Error loading or embedding the visualization for ${elementId}:`, error);
+                    document.querySelector(elementId).innerHTML = `
+                        <p class="error-message">Error loading visualization: ${error.message}</p>
+                    `;
+                });
+        }
+
+        // Load and embed each visualization
+        loadAndEmbedVegaLite('#radar', 'radar.json');
+        loadAndEmbedVegaLite('#bump', 'bump_chart.json');
+        loadAndEmbedVegaLite('#sankey', 'line.json');
+        loadAndEmbedVegaLite('#bubble', 'bubble.json');
+        loadAndEmbedVegaLite('#additional', 'map_stadium.json');
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

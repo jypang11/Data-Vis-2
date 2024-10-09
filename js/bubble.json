@@ -1,0 +1,136 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "width": 800,
+  "height": 800,
+  "background": "#f8f9fa",
+  "padding": {"left": 5, "right": 5, "top": 20, "bottom": 0},
+  "autosize": "none",
+  "signals": [
+    {"name": "cx", "update": "width / 2"},
+    {"name": "cy", "update": "height / 2"},
+    {
+      "name": "gravityX",
+      "value": 0.05,
+      "bind": {"input": "range", "min": 0, "max": 0.2, "step": 0.01}
+    },
+    {
+      "name": "gravityY",
+      "value": 0.05,
+      "bind": {"input": "range", "min": 0, "max": 0.2, "step": 0.01}
+    },
+    {
+      "name": "sizeFactor",
+      "value": 3000,
+      "bind": {"input": "range", "min": 1000, "max": 10000, "step": 100}
+    }
+  ],
+  "data": [
+    {
+      "name": "table",
+      "url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/2020-09-24.csv",
+      "format": {"type": "csv", "parse": {"Goals": "number", "Appearances": "number"}},
+      "transform": [
+        {
+          "type": "formula",
+          "as": "GoalsPerAppearance",
+          "expr": "datum.Goals / datum.Appearances"
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "size",
+      "domain": {"data": "table", "field": "GoalsPerAppearance"},
+      "range": [100, {"signal": "sizeFactor"}]
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "domain": {"data": "table", "field": "Position"},
+      "range": ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]
+    }
+  ],
+  "marks": [
+    {
+      "name": "nodes",
+      "type": "symbol",
+      "from": {"data": "table"},
+      "encode": {
+        "enter": {
+          "fill": {"scale": "color", "field": "Position"},
+          "xfocus": {"signal": "cx"},
+          "yfocus": {"signal": "cy"}
+        },
+        "update": {
+          "size": {"signal": "scale('size', datum.GoalsPerAppearance)"},
+          "stroke": {"value": "white"},
+          "strokeWidth": {"value": 1},
+          "tooltip": {
+            "signal": "{'Player': datum.Name, 'Club': datum.Club, 'Position': datum.Position, 'Goals': datum.Goals, 'Appearances': datum.Appearances, 'Goals per Appearance': format(datum.GoalsPerAppearance, '.2f')}"
+          }
+        },
+        "hover": {
+          "strokeWidth": {"value": 2},
+          "stroke": {"value": "black"}
+        }
+      },
+      "transform": [
+        {
+          "type": "force",
+          "iterations": 100,
+          "static": false,
+          "forces": [
+            {
+              "force": "collide",
+              "iterations": 2,
+              "radius": {"expr": "sqrt(datum.size) / 2"}
+            },
+            {"force": "center", "x": {"signal": "cx"}, "y": {"signal": "cy"}},
+            {"force": "x", "x": "xfocus", "strength": {"signal": "gravityX"}},
+            {"force": "y", "y": "yfocus", "strength": {"signal": "gravityY"}}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "from": {"data": "nodes"},
+      "encode": {
+        "enter": {
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"},
+          "fontWeight": {"value": "bold"},
+          "fill": {"value": "black"},
+          "text": {"field": "datum.Name"}
+        },
+        "update": {
+          "x": {"field": "x"},
+          "y": {"field": "y"},
+          "fontSize": {"signal": "sqrt(scale('size', datum.GoalsPerAppearance)) / 3"}
+        }
+      }
+    }
+  ],
+  "legends": [
+    {
+      "fill": "color",
+      "title": "Position",
+      "orient": "top-left",
+      "labelFontSize": 14,
+      "symbolSize": 150,
+      "titleFontSize": 16,
+      "encode": {
+        "symbols": {"enter": {"fillOpacity": {"value": 1}}},
+        "labels": {"update": {"text": {"field": "value"}}}
+      }
+    }
+  ],
+  "title": {
+    "text": "Premier League Players by Goals per Appearance",
+    "fontSize": 24,
+    "fontWeight": "bold",
+    "anchor": "middle",
+    "offset": 20
+  }
+}

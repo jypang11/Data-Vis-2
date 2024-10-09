@@ -1,11 +1,10 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v5.json",
   "description": "A radar chart with triangular outline comparing club performance based on football statistics.",
-  "width": 400,
-  "height": 400,
+  "width": 650,
+  "height": 700,
   "padding": 20,
   "autosize": {"type": "none"},
-  "background": "#f0f0f0",
   "title": {
     "text": "Club Performance Metrics",
     "fontSize": 24,
@@ -35,7 +34,7 @@
   "data": [
     {
       "name": "table",
-      "url": "wrangled_football_data.csv",
+      "url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/wrangled_football_data.csv",
       "format": {"type": "csv"},
       "transform": [
         {"type": "filter", "expr": "indexof(club_select, datum.Club) >= 0"}

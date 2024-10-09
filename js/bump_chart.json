@@ -4,7 +4,7 @@
     "width": 550,
     "height": 400,
     "data": {
-        "url": "Team_Points_and_Ranks.csv",  
+        "url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/Team_Points_and_Ranks.csv",  
         "format": {
             "type": "csv"
         }

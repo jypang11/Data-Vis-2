@@ -1,12 +1,12 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "width": 800,
-  "height": 400,
+  "width": 300,
+  "height": 300,
   "padding": 5,
   "data": [
     {
       "name": "source",
-      "url": "ManUtd 2023 Match Statistics.csv",
+      "url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/ManUtd%202023%20Match%20Statistics.csv",
       "format": {"type": "csv", "parse": "auto"}
     },
     {
