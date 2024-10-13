@@ -1,8 +1,8 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v5.json",
   "description": "A radar chart with triangular outline comparing club performance based on football statistics.",
-  "width": 650,
-  "height": 700,
+  "width": 580,
+  "height": 900,
   "padding": 20,
   "autosize": {"type": "none"},
   "title": {

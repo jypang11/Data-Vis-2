@@ -1,0 +1,90 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+    "title": "",
+    "width": 500,
+    "height": 300,
+    "data": {
+      "url": "https://raw.githubusercontent.com/jonathanbrisbane/FIT3179/main/data/GHGEmissions.csv"
+    },
+    "layer": [
+      {
+        "encoding": {
+          "x": {
+            "field": "Year",
+            "type": "temporal",
+            "axis": {"title": "Year", "grid": false}
+          },
+          "y": {
+            "field": "Mt",
+            "type": "quantitative",
+            "axis": {"title": "Mt", "grid": false}
+          },
+          "color": {
+            "field": "",
+            "type": "nominal",
+            "legend": {"orient": "none", "legendX": 95, "legendY": 340,"columns": 5, "rowPadding": 10},
+            "scale": {"range": ["#e41a1c", "#984ea3", "#4daf4a", "#377eb8"]}
+          },
+          "opacity": {"value": 0.7}
+        },
+        "layer": [
+          {"mark": "line"},
+          {
+            "selection": {
+              "label": {
+                "type": "single",
+                "nearest": true,
+                "on": "mouseover",
+                "encodings": ["x"],
+                "empty": "none"
+              }
+            },
+            "mark": "point",
+            "encoding": {
+              "opacity": {
+                "condition": {"selection": "label", "value": 1},
+                "value": 0
+              }
+            }
+          }
+        ]
+      },
+      {
+        "transform": [{"filter": {"selection": "label"}}],
+        "layer": [
+          {
+            "mark": {"type": "rule", "color": "gray"},
+            "encoding": {
+              "x": {"type": "temporal", "field": "Year", "aggregate": "min"}
+            }
+          },
+          {
+            "encoding": {
+              "text": {"type": "quantitative", "field": "Mt"},
+              "x": {"type": "temporal", "field": "Year"},
+              "y": {"type": "quantitative", "field": "Mt"}
+            },
+            "layer": [
+              {
+                "mark": {
+                  "type": "text",
+                  "stroke": "white",
+                  "strokeWidth": 2,
+                  "align": "right",
+                  "dx": 5,
+                  "dy": -5
+                }
+              },
+              {
+                "mark": {"type": "text", "align": "right", "dx": 5, "dy": -5},
+                "encoding": {
+                  "color": {"type": "nominal", "field": "Greenhouse Gas"}
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "config": {"font": "Georgia"}
+  }

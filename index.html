@@ -3,119 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premier League Insights</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Premier League Insights: A Data-Driven Journey</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f0f2f5;
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+            padding-top: 80px; /* Adjusted for fixed taskbar */
         }
         .card {
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
             border: none;
-            transition: box-shadow 0.3s;
-            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            overflow: hidden;
         }
         .card:hover {
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
         .card-header {
-            background-color: #8a2be2;
+            background-color: #3d185b;
             color: white;
-            font-weight: bold;
-            border-radius: 12px 12px 0 0;
+            font-weight: 700;
+            border-radius: 16px 16px 0 0;
             font-size: 1.25rem;
+            padding: 15px 20px;
+            text-align: center;
         }
         .card-body {
-            padding: 20px;
+            padding: 25px;
+            text-align: center;
         }
         .visualization-container {
             height: 400px;
+            position: relative;
         }
         .visualization-container-large {
             height: 600px;
+            position: relative;
+        }
+        .visualization-container-extra-large {
+            height: 670px;
+            position: relative;
         }
         .error-message {
-            color: red;
+            color: #dc3545;
             font-weight: bold;
+            padding: 20px;
+            background-color: #f8d7da;
+            border-radius: 8px;
         }
         .title-container {
+            background-color: #3d185b;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-wrap: wrap;
         }
         .title-container img {
-            max-height: 50px;
-            margin-right: 15px;
+            max-height: 100px;
+            margin-right: 30px;
+            margin-bottom: 20px;
+        }
+        .title-container h1 {
+            color: white;
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
         }
         .description-box {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-            padding: 10px;
-            margin-top: 15px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .annotation {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .metadata {
             font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+        }
+        .btn-toggle-description {
+            background-color: #3d185b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-toggle-description:hover {
+            background-color: #2a1040;
+        }
+        .hidden {
+            display: none;
+        }
+        /* Updated Taskbar styles */
+        .taskbar {
+            background-color: #4a2c6d; /* New color: a lighter shade of purple */
+            padding: 10px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Added subtle shadow for depth */
+        }
+
+        .taskbar-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .taskbar-logo {
+            height: 40px;
+            margin-right: 20px;
+        }
+
+        .taskbar-nav {
+            display: flex;
+        }
+
+        .taskbar-nav a {
+            color: #f0e6ff; /* Lighter text color for better contrast */
+            text-decoration: none;
+            padding: 5px 15px;
+            margin: 0 5px;
+            border-radius: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .taskbar-nav a:hover, .taskbar-nav a.active {
+            background-color: #3d185b; /* Original dark purple for hover/active state */
+            color: white;
+        }
+
+        /* Update other elements to match the new color scheme */
+        .card-header, .btn-toggle-description {
+            background-color: #4a2c6d; /* Match the new taskbar color */
+        }
+
+        .btn-toggle-description:hover {
+            background-color: #3d185b;
+        }
+
+        .title-container {
+            background-color: #4a2c6d; /* Match the new taskbar color */
+        }
+            }
+            .taskbar-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid mt-4">
+    <div class="taskbar">
+        <div class="taskbar-content">
+            <img src="Daco_5699710.png" alt="Premier League Logo" class="taskbar-logo">
+            <nav class="taskbar-nav">
+                <a href="#team-performance">Team Performance</a>
+                <a href="#player-age">Player Age</a>
+                <a href="#season-ranking">Season Ranking</a>
+                <a href="#goal-scorers">Goal Scorers</a>
+                <a href="#stadiums">Stadiums</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-5">
         <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="title-container">
-                            <img src="EnglishPremierLeague.webp" alt="Premier League Logo" class="img-fluid">
-                            <h1>Premier League Insights</h1>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-center">Premier League is the top professional football league in England, featuring elite clubs competing annually to be crowned champions of English football.</p>
-                    </div>
+                <div class="title-container">
+                    <img src="EnglishPremierLeague.webp" alt="Premier League Logo" class="img-fluid">
+                    <h1>Premier League Insights</h1>
                 </div>
+                <p class="story-text">
+                    Explore the Premier League through data. Our visualizations reveal team performance, player statistics, and season dynamics.
+                </p>
             </div>
         </div>
         
         <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header text-center">Team Performance Metrics</div>
+            <div class="col-lg-6">
+                <div id="team-performance" class="card">
+                    <div class="card-header">Team Performance Profile</div>
                     <div class="card-body">
-                        <div id="radar" class="visualization-container"></div>
-                        <div class="description-box">
-                            <p>This radar chart illustrates a team's performance across six key metrics: Goals, Assists, Tackles, Interceptions, Passes per match, and Appearances. The red area represents the team's strengths and weaknesses, with larger areas indicating better performance. This visual tool enables quick assessment of a team's all-round capabilities and playing style, highlighting areas of excellence and potential improvement. It provides a comprehensive view of the team's balanced performance across various aspects of the game.</p>
+                        <div id="radar" class="visualization-container">
+                            <div class="annotation" style="top: 10px; left: 50%; transform: translateX(-50%);">Goals: Attack strength</div>
+                            <div class="annotation" style="bottom: 10px; left: 50%; transform: translateX(-50%);">Tackles: Defensive aggression</div>
+                        </div>
+                        <button class="btn-toggle-description" onclick="toggleDescription(this)">Show Description</button>
+                        <div class="description-box hidden">
+                            <p>This radar chart shows a team's performance across six key metrics. Larger areas indicate stronger performance. The shape reveals a team's playing style and areas for improvement.</p>
                         </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header text-center">Premier League Players: Age vs. Appearances</div>
+                <div id="player-age" class="card">
+                    <div class="card-header">Player Age vs. Appearances</div>
                     <div class="card-body">
-                        <div id="sankey" class="visualization-container-large"></div>
-                        <div class="description-box">
-                            <p>This scatter plot visualizes Premier League player statistics, comparing age against career appearances. Each point represents a player, with size indicating goals scored and color denoting club affiliation. The x-axis displays player ages, while the y-axis shows total appearances, revealing career trajectories and longevity. The visualization captures the diverse landscape of player careers, highlighting young talents, peak performers, and experienced veterans. It allows viewers to easily identify age-related trends, club preferences, and individual player achievements. The chart effectively summarizes player development and utilization across the entire Premier League, offering insights into career patterns and club strategies.</p>
+                        <div id="sankey" class="visualization-container-extra-large">
+                            <div class="annotation" style="top: 50px; left: 50%; transform: translateX(-50%);">Young prospects</div>
+                            <div class="annotation" style="bottom: 50px; left: 50%; transform: translateX(-50%);">Experienced veterans</div>
+                        </div>
+                        <button class="btn-toggle-description" onclick="toggleDescription(this)">Show Description</button>
+                        <div class="description-box hidden">
+                            <p>This scatter plot maps player careers. Each point is a player, with size indicating goals scored and color showing club. This visualization reveals patterns in player development, club recruitment strategies, and how age relates to playing time and goal-scoring ability across different teams and positions.</p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header text-center">Team Ranking Trends</div>
+            <div class="col-lg-6">
+                <div id="season-ranking" class="card">
+                    <div class="card-header">Season Ranking Trends</div>
                     <div class="card-body">
-                        <div id="bump" class="visualization-container"></div>
-                        <div class="description-box">
-                            <p>This bump chart tracks Premier League team rankings over a season. Each line represents a team, with upward slopes showing ranking improvement and downward slopes indicating decline. The visualization captures the dynamic nature of team performance and league standings, highlighting consistent top performers and teams making significant moves. It allows viewers to easily identify trends, turning points, and the overall competitive landscape throughout the season. The chart effectively summarizes the ebb and flow of team fortunes across the entire league campaign.</p>
+                        <div id="bump" class="visualization-container">
+                            <div class="annotation" style="top: 10px; left: 50%; transform: translateX(-50%);">Early fluctuations</div>
+                            <div class="annotation" style="bottom: 10px; left: 50%; transform: translateX(-50%);">Final push</div>
+                        </div>
+                        <button class="btn-toggle-description" onclick="toggleDescription(this)">Show Description</button>
+                        <div class="description-box hidden">
+                            <p>This bump chart tracks team rankings throughout a season. Each line is a team's journey, with slopes showing ranking changes. It captures the drama of title races and relegation battles.</p>
                         </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header text-center">Premier League Players by Goals per Appearance</div>
+                <div id="goal-scorers" class="card">
+                    <div class="card-header">Goal Scorers Efficiency</div>
                     <div class="card-body">
-                        <div id="bubble" class="visualization-container-large"></div>
-                        <div class="description-box">
-                            <p>This force-directed bubble chart visualizes Premier League players based on their goal-scoring efficiency. Each bubble represents a player, with its size reflecting their goals per appearance ratio. Colors denote different playing positions, allowing for quick comparison across roles. The chart's dynamic layout clusters similar performers together, highlighting standout goal-scorers and positional trends. Viewers can easily identify top strikers, surprisingly efficient defenders, and midfielders with notable goal contributions. Interactive elements enable detailed exploration of individual player stats, including total goals and appearances. This visualization effectively summarizes player performance, offering insights into scoring patterns and exceptional talents across the Premier League.</p>
+                        <div id="bubble" class="visualization-container-large">
+                            <div class="annotation" style="top: 50px; left: 50%; transform: translateX(-50%);">Top strikers</div>
+                            <div class="annotation" style="bottom: 50px; left: 50%; transform: translateX(-50%);">Scoring defenders</div>
+                        </div>
+                        <button class="btn-toggle-description" onclick="toggleDescription(this)">Show Description</button>
+                        <div class="description-box hidden">
+                            <p>This bubble chart shows player goal-scoring efficiency. Bubble size reflects goals per appearance, while colors indicate efficiency levels. It highlights top scorers and clusters similar players.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div id="stadiums" class="card">
+                    <div class="card-header">Premier League Stadiums</div>
+                    <div class="card-body">
+                        <div id="additional" class="visualization-container-large">
+                            <div class="annotation" style="top: 50px; left: 50%; transform: translateX(-50%);">London cluster</div>
+                            <div class="annotation" style="bottom: 50px; left: 50%; transform: translateX(-50%);">Northern clubs</div>
+                        </div>
+                        <button class="btn-toggle-description" onclick="toggleDescription(this)">Show Description</button>
+                        <div class="description-box hidden">
+                            <p>This interactive map displays stadiums across Europe where current and former Premier League players have competed. Bubble size indicates stadium capacity, while colors represent different countries. Users can zoom, pan, and search to explore stadium locations and details.</p>
                         </div>
                     </div>
                 </div>
@@ -124,11 +305,9 @@
 
         <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header text-center">Additional Visualization</div>
-                    <div class="card-body">
-                        <div id="additional" class="visualization-container-large"></div>
-                    </div>
+                <div class="metadata">
+                    <p><strong>Data:</strong> https://www.kaggle.com/datasets/ramjasmaurya/footballsoccer-clubs-ranking | <strong>Author:</strong> Brandon Pang | <strong>Updated:</strong> 13/10/2024 | <strong>Version:</strong> 2.1</p>
+                    <p><strong>Contact:</strong> bpan0026@student.monash.edu | <strong>Disclaimer:</strong> For informational purposes. Verify data with official sources.</p>
                 </div>
             </div>
         </div>
@@ -148,7 +327,7 @@
                     console.log(`Successfully loaded ${jsonFile}. Embedding visualization...`);
                     return vegaEmbed(elementId, spec, {
                         actions: false,
-                        height: elementId === '#sankey' || elementId === '#bubble' || elementId === '#additional' ? 550 : 350
+                        height: elementId === '#sankey' ? 570 : (elementId === '#bubble' || elementId === '#additional' ? 550 : 350)
                     });
                 })
                 .then(() => {
@@ -168,10 +347,44 @@
         loadAndEmbedVegaLite('#sankey', 'line.json');
         loadAndEmbedVegaLite('#bubble', 'bubble.json');
         loadAndEmbedVegaLite('#additional', 'map_stadium.json');
+
+        function toggleDescription(button) {
+            const descriptionBox = button.nextElementSibling;
+            descriptionBox.classList.toggle('hidden');
+            button.textContent = descriptionBox.classList.contains('hidden') ? 'Show Description' : 'Hide Description';
+        }
+
+        // Smooth scrolling for taskbar navigation
+        document.querySelectorAll('.taskbar-nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const yOffset = -80; // Adjust this value to account for the fixed taskbar
+                    const y = targetElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    window.scrollTo({top: y, behavior: 'smooth'});
+                }
+            });
+        });
+
+        // Add a scroll event listener to highlight the current section in the taskbar
+        window.addEventListener('scroll', () => {
+            const scrollPosition = window.scrollY;
+            document.querySelectorAll('.card').forEach(section => {
+                const sectionTop = section.offsetTop - 100; // Adjust this value as needed
+                const sectionBottom = sectionTop + section.offsetHeight;
+                if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+                    const correspondingLink = document.querySelector(`.taskbar-nav a[href="#${section.id}"]`);
+                    if (correspondingLink) {
+                        document.querySelectorAll('.taskbar-nav a').forEach(link => link.classList.remove('active'));
+                        correspondingLink.classList.add('active');
+                    }
+                }
+            });
+        });
     </script>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

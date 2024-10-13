@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "width": 800,
+  "width": 600,
   "height": 800,
   "background": "#f8f9fa",
   "padding": {"left": 5, "right": 5, "top": 20, "bottom": 0},
@@ -22,6 +22,15 @@
       "name": "sizeFactor",
       "value": 3000,
       "bind": {"input": "range", "min": 1000, "max": 10000, "step": 100}
+    },
+    {
+      "name": "efficiencyThreshold",
+      "value": 0.5,
+      "bind": {"input": "range", "min": 0, "max": 1, "step": 0.05}
+    },
+    {
+      "name": "restart",
+      "update": "efficiencyThreshold"
     }
   ],
   "data": [
@@ -34,6 +43,11 @@
           "type": "formula",
           "as": "GoalsPerAppearance",
           "expr": "datum.Goals / datum.Appearances"
+        },
+        {
+          "type": "formula",
+          "as": "isEfficient",
+          "expr": "datum.GoalsPerAppearance > efficiencyThreshold"
         }
       ]
     }
@@ -47,8 +61,8 @@
     {
       "name": "color",
       "type": "ordinal",
-      "domain": {"data": "table", "field": "Position"},
-      "range": ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]
+      "domain": [true, false],
+      "range": ["#e41a1c", "#377eb8"]
     }
   ],
   "marks": [
@@ -58,16 +72,16 @@
       "from": {"data": "table"},
       "encode": {
         "enter": {
-          "fill": {"scale": "color", "field": "Position"},
           "xfocus": {"signal": "cx"},
           "yfocus": {"signal": "cy"}
         },
         "update": {
           "size": {"signal": "scale('size', datum.GoalsPerAppearance)"},
+          "fill": {"scale": "color", "field": "isEfficient"},
           "stroke": {"value": "white"},
           "strokeWidth": {"value": 1},
           "tooltip": {
-            "signal": "{'Player': datum.Name, 'Club': datum.Club, 'Position': datum.Position, 'Goals': datum.Goals, 'Appearances': datum.Appearances, 'Goals per Appearance': format(datum.GoalsPerAppearance, '.2f')}"
+            "signal": "{'Player': datum.Name, 'Club': datum.Club, 'Position': datum.Position, 'Goals': datum.Goals, 'Appearances': datum.Appearances, 'Goals per Appearance': format(datum.GoalsPerAppearance, '.2f'), 'Efficient': datum.isEfficient}"
           }
         },
         "hover": {
@@ -78,12 +92,13 @@
       "transform": [
         {
           "type": "force",
-          "iterations": 100,
+          "iterations": 300,
+          "restart": {"signal": "restart"},
           "static": false,
           "forces": [
             {
               "force": "collide",
-              "iterations": 2,
+              "iterations": 5,
               "radius": {"expr": "sqrt(datum.size) / 2"}
             },
             {"force": "center", "x": {"signal": "cx"}, "y": {"signal": "cy"}},
@@ -115,14 +130,20 @@
   "legends": [
     {
       "fill": "color",
-      "title": "Position",
+      "title": "Goal-Scoring Efficiency",
       "orient": "top-left",
       "labelFontSize": 14,
       "symbolSize": 150,
       "titleFontSize": 16,
       "encode": {
         "symbols": {"enter": {"fillOpacity": {"value": 1}}},
-        "labels": {"update": {"text": {"field": "value"}}}
+        "labels": {
+          "update": {
+            "text": {
+              "signal": "datum.value ? 'Efficient' : 'Less Efficient'"
+            }
+          }
+        }
       }
     }
   ],

@@ -1,17 +1,24 @@
 {
     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "description": "Premier League Team Rankings Over Seasons",
+    "description": "Premier League Top Team Rankings Over Seasons (Color-Blind Friendly)",
     "width": 550,
     "height": 400,
     "data": {
-        "url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/Team_Points_and_Ranks.csv",  
+        "url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/Team_Points_and_Ranks.csv",
         "format": {
             "type": "csv"
         }
     },
     "transform": [
         {
-            "filter": "datum.Rank <= 5"  
+            "filter": "datum.Rank <= 4"
+        },
+        {
+            "calculate": "datum.Team == 'Manchester United' ? 'Manchester Utd' : datum.Team",
+            "as": "Team_Display"
+        },
+        {
+            "filter": "indexof(['Manchester City', 'Chelsea', 'Liverpool', 'Arsenal', 'Manchester Utd'], datum.Team_Display) >= 0"
         }
     ],
     "encoding": {
@@ -27,7 +34,7 @@
             "sort": "descending",
             "title": "Team Ranking",
             "axis": {
-                "tickCount": 5
+                "tickCount": 4
             }
         }
     },
@@ -39,7 +46,7 @@
                     "select": {
                         "type": "point",
                         "on": "click",
-                        "fields": ["Team"]
+                        "fields": ["Team_Display"]
                     },
                     "bind": "legend"
                 }
@@ -54,18 +61,21 @@
                         "empty": false,
                         "value": 100
                     },
-                    "value": 25
+                    "value": 60
                 },
                 "color": {
-                    "condition": {
-                        "param": "team_select",
-                        "empty": false,
-                        "value": "black"
+                    "field": "Team_Display",
+                    "type": "nominal",
+                    "scale": {
+                        "domain": ["Manchester City", "Chelsea", "Liverpool", "Arsenal", "Manchester Utd"],
+                        "range": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
                     },
-                    "field": "Team"
+                    "legend": {
+                        "title": "Team"
+                    }
                 },
                 "tooltip": [
-                    {"field": "Team"},
+                    {"field": "Team_Display", "title": "Team"},
                     {"field": "Rank"},
                     {"field": "Season_End_Year"}
                 ]
@@ -73,24 +83,29 @@
         },
         {
             "mark": {
-                "type": "line"
+                "type": "line",
+                "strokeWidth": 2
             },
             "encoding": {
                 "color": {
                     "condition": {
                         "param": "team_select",
                         "empty": false,
-                        "field": "Team"
+                        "field": "Team_Display",
+                        "scale": {
+                            "domain": ["Manchester City", "Chelsea", "Liverpool", "Arsenal", "Manchester Utd"],
+                            "range": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+                        }
                     },
-                    "value": "lightgray"  
+                    "value": "lightgray"
                 },
-                "size": {
+                "opacity": {
                     "condition": {
                         "param": "team_select",
                         "empty": false,
-                        "value": 3
+                        "value": 1
                     },
-                    "value": 1  
+                    "value": 0.2
                 }
             }
         }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
   "height": 200,
-  "width": 650,
+  "width": 600,
   "data": {
     "url": "https://raw.githubusercontent.com/jypang11/Datasets/refs/heads/main/2020-09-24.csv"
   },
@@ -70,11 +70,7 @@
         "color": {
           "field": "Club",
           "type": "nominal",
-          "legend": {
-            "title": "Club",
-            "orient": "bottom",
-            "columns": 3
-          }
+          "legend": null
         },
         "size": {
           "field": "Goals",
@@ -111,10 +107,6 @@
   ],
   "config": {
     "font": "Georgia",
-    "legend": {
-      "titleAlign": "left",
-      "labelAlign": "left"
-    },
     "view": {"stroke": null}
   }
 }
